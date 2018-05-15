@@ -74,5 +74,82 @@ describe('server', function() {
     });
   });
 
+  it('Should 200 when asked for OPTIONS method', function(done) {
+    var requestParams = {
+      method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        text: 'Do my bidding!'}
+    };
+    request(requestParams, function(error, response, body) {
+      expect(response.statusCode).to.equal(200);
+      done();
+    });
+  });
 
+  it('Should rewrite headers for OPTIONS method', function(done) {
+    var requestParams = {
+      method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Jono',
+        text: 'Do my bidding!'}
+    };
+    request(requestParams, function(error, response, body) {
+      //console.log(response.headers, '<--------------------headers')
+      expect(response.headers.hasOwnProperty('connection')).to.be.true;
+      done();
+    });
+  });
+
+  it('should respond with messages in order', function(done) {
+    var requestParams = {method: 'POST',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Felix',
+        text: 'Just anything!'}
+    };
+
+    request(requestParams, function(error, response, body) {
+      // Now if we request the log, that message we posted should be there:
+      request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
+        var messages = JSON.parse(body).results;
+        //console.log(messages, '<---------tester-----------')
+        expect(messages[2].username).to.equal('Felix');
+        expect(messages[2].text).to.equal('Just anything!');
+        done();
+      });
+    });
+  });
+
+  it('Should rewrite headers for OPTIONS method access-control-allow-origin', function(done) {
+    var requestParams = {
+      method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Cam',
+        text: 'Hey dude!'}
+    };
+    request(requestParams, function(error, response, body) {
+      //console.log(response.headers, '<--------------------headers')
+      expect(response.headers.hasOwnProperty('access-control-allow-origin')).to.be.true;
+      done();
+    });
+  });
+
+  it('Should rewrite headers for OPTIONS method access-control-allow-methods', function(done) {
+    var requestParams = {
+      method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+      json: {
+        username: 'Cam',
+        text: 'Last test!'}
+    };
+    request(requestParams, function(error, response, body) {
+      //console.log(response.headers, '<--------------------headers')
+      expect(response.headers.hasOwnProperty('access-control-allow-methods')).to.be.true;
+      done();
+    });
+  });
 });

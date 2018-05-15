@@ -26,7 +26,7 @@ var app = {
     app.$roomSelect.on('change', app.handleRoomChange);
 
     // Fetch previous messages
-    app.startSpinner();
+    //app.startSpinner();
     app.fetch(false);
 
     // Poll for new messages
@@ -36,7 +36,7 @@ var app = {
   },
 
   send: function(message) {
-    app.startSpinner();
+    //app.startSpinner();
 
     // POST the message to the server
     $.ajax({
@@ -47,7 +47,7 @@ var app = {
       success: function (data) {
         // Clear messages input
         app.$message.val('');
-
+        console.log('successful send');
         // Trigger a fetch to update the messages, pass true to animate
         app.fetch();
       },
@@ -58,33 +58,36 @@ var app = {
   },
 
   fetch: function(animate) {
+    console.log('fetch is working');
     $.ajax({
       url: app.server,
       type: 'GET',
-      data: { order: '-createdAt' },
+      data: {order: '-createdAt'},
       success: function(data) {
+        var parsedData = JSON.parse(data);
         // Don't bother if we have nothing to work with
-        if (!data.results || !data.results.length) { return; }
-
+        if (!parsedData.results || !parsedData.results.length) { return; }
+        console.log('successful fetch');
         // Store messages for caching later
-        app.messages = data.results;
-
+        app.messages = parsedData.results;
         // Get the last message
-        var mostRecentMessage = data.results[data.results.length - 1];
+        var mostRecentMessage = parsedData.results[parsedData.results.length - 1];
 
         // Only bother updating the DOM if we have a new message
         if (mostRecentMessage.objectId !== app.lastMessageId) {
           // Update the UI with the fetched rooms
-          app.renderRoomList(data.results);
+          app.renderRoomList(parsedData.results);
 
           // Update the UI with the fetched messages
-          app.renderMessages(data.results, animate);
+          app.renderMessages(parsedData.results, animate);
 
           // Store the ID of the most recent message
           app.lastMessageId = mostRecentMessage.objectId;
         }
+      
       },
       error: function(error) {
+        //console.log(url, '<---------------------')
         console.error('chatterbox: Failed to fetch messages', error);
       }
     });
@@ -97,7 +100,7 @@ var app = {
   renderMessages: function(messages, animate) {
     // Clear existing messages`
     app.clearMessages();
-    app.stopSpinner();
+    //app.stopSpinner();
     if (Array.isArray(messages)) {
       // Add all fetched messages that are in our current room
       messages
@@ -203,7 +206,7 @@ var app = {
         app.$roomSelect.val(roomname);
       }
     } else {
-      app.startSpinner();
+      //app.startSpinner();
       // Store as undefined for empty names
       app.roomname = app.$roomSelect.val();
     }
@@ -222,15 +225,15 @@ var app = {
 
     // Stop the form from submitting
     event.preventDefault();
-  },
-
-  startSpinner: function() {
-    $('.spinner img').show();
-    $('form input[type=submit]').attr('disabled', 'true');
-  },
-
-  stopSpinner: function() {
-    $('.spinner img').fadeOut('fast');
-    $('form input[type=submit]').attr('disabled', null);
   }
+
+  // startSpinner: function() {
+  //   $('.spinner img').show();
+  //   $('form input[type=submit]').attr('disabled', 'true');
+  // },
+
+  // stopSpinner: function() {
+  //   $('.spinner img').fadeOut('fast');
+  //   $('form input[type=submit]').attr('disabled', null);
+  // }
 };

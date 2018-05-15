@@ -50,7 +50,7 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'JSON';
+  headers['Content-Type'] = 'text/plain';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -64,12 +64,11 @@ var requestHandler = function(request, response) {
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
   // console.log(request.method, request.url, '<-----------------')
-  if (request.url !== '/classes/messages') {
+  if (!request.url.includes('/classes/messages')) {
     //statusCode = 404;
     response.writeHead(404, headers);
-    response.end();//JSON.stringify({statusCode: statusCode, results: []}))
+    response.end();
   } else if (request.method === 'POST') {
-    
     let body = [];
     request.on('data', (chunk)=>{
       body.push(chunk);
@@ -78,13 +77,22 @@ var requestHandler = function(request, response) {
       body = Buffer.concat(body).toString();
       results.push(JSON.parse(body));
       console.log(results, '<========================');
+      response.writeHead(201, headers);
       response.end(JSON.stringify({results: results}));
     });
-    response.writeHead(201, headers);
-    response.end();
   } else if (request.method === 'GET') {
     response.writeHead(200, headers);
+    console.log(results, '<------------------');
     response.end(JSON.stringify({results: results}));
+  } else if (request.method === 'OPTIONS') {
+    response.writeHead(200, {
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'access-control-allow-headers': 'content-type, accept',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE',
+      'Access-Control-Max-Age': 86400,
+    });
+    response.end();
   }
   //response.end();
 };
