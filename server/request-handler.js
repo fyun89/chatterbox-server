@@ -11,7 +11,13 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-var results = []
+var results = [];
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
@@ -62,21 +68,21 @@ var requestHandler = function(request, response) {
     //statusCode = 404;
     response.writeHead(404, headers);
     response.end();//JSON.stringify({statusCode: statusCode, results: []}))
-  }else if (request.method === 'POST') {
+  } else if (request.method === 'POST') {
     
-    let body = []
+    let body = [];
     request.on('data', (chunk)=>{
       body.push(chunk);
-    }).on('end',()=>{
+    }).on('end', ()=>{
       //var results = [];
       body = Buffer.concat(body).toString();
       results.push(JSON.parse(body));
-      console.log(results, '<========================')
+      console.log(results, '<========================');
       response.end(JSON.stringify({results: results}));
-    })
+    });
     response.writeHead(201, headers);
-    response.end()
-  }else if (request.method === 'GET') {
+    response.end();
+  } else if (request.method === 'GET') {
     response.writeHead(200, headers);
     response.end(JSON.stringify({results: results}));
   }
@@ -92,10 +98,4 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
 exports.requestHandler = requestHandler;
